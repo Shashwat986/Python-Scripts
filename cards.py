@@ -85,6 +85,7 @@ class Deck(object):
 	def __getitem__(self,key):
 		pass
 	def __reversed__(self):
+		# doesn't work yet
 		d = Deck(self.numDecks, self.jflag)
 		d.cards = reversed(self.cards)
 		return d
