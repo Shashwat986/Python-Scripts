@@ -1,5 +1,6 @@
 import copy
 import random
+import warnings
 
 values = [0,'A','2','3','4','5','6','7','8','9','10','J','Q','K']
 suits = ['C','D','H','S']
@@ -10,13 +11,27 @@ class Card(object):
 	suit = '0'
 	value = 0
 	def __init__(self, v, s):
+		if s not in suits:
+			raise TypeError("Invalid Suit")
+		if v not in values:
+			if type(v) == type(1) and v <=13:
+				v = values[v]
+			else:
+				raise TypeError("Invalid Rank")
+		
 		self.rank = v
 		self.suit = s
 	def __repr__(self):
-		return self.rank + self.suit
+		if self.rank == '0' and self.suit == '0':
+			return '<Joker>'
+		else:
+			return '<'+self.rank + self.suit+'>'
 	def value(self):
-		
 		return values.index(self.rank)
+	def __cmp__(self, other):
+		t1 = self.suit, self.rank
+		t2 = other.suit, other.rank
+		return cmp(t1,t2)
 
 class Deck(object):
 	def __init__(self, numDecks=1, jflag=0):
@@ -24,15 +39,20 @@ class Deck(object):
 		self.numDecks = numDecks
 		self.jflag = jflag
 		if jflag:
-			 self.cards += joker*jflag
+			 self.cards += [Card('0','0') for j in jflag]
 		self.orig_cards=copy.deepcopy(self.cards)
 		random.shuffle(self.cards)
-	def draw(self):
-		if self.deckSize ():
-			card = self.cards.pop()
+	def draw(self, n = 1):
+		card = []
+		for _ in range(n):
+			if self.deckSize():
+				card.append(self.cards.pop())
+			else:
+				raise IndexError("Deck Empty!")
+		if n==1:
+			return card[0]
 		else:
-			raise IndexError("Deck Empty!")
-		return card
+			return card
 	def deckSize(self):
 		return len(self.cards)
 	def reshuffle(self):
@@ -47,6 +67,10 @@ class Deck(object):
 	def deal(self, n, cards=None):
 		if cards is None:
 			cards=self.deckSize();
+		if cards > self.deckSize():
+			raise IndexError("Not Enough Cards!")
+		if cards % n != 0:
+			warnings.warn("Warning: The cards will not be distributed evenly.")
 		dealt=[]
 		for _ in range(n):
 			dealt.append([])
@@ -61,7 +85,9 @@ class Deck(object):
 	def __getitem__(self,key):
 		pass
 	def __reversed__(self):
-		pass
+		d = Deck(self.numDecks, self.jflag)
+		d.cards = reversed(self.cards)
+		return d
 	def __iter(self):
 		pass
 	def __repr__(self):
