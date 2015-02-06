@@ -2,9 +2,14 @@ import copy
 import random
 import warnings
 
-values = [0,'A','2','3','4','5','6','7','8','9','10','J','Q','K']
+ranks = [0,'A','2','3','4','5','6','7','8','9','10','J','Q','K']
+rank_names = {'0':'Joker','A':'Ace','2':'Two','3':'Three',
+	'4':'Four','5':'Five','6':'Six','7':'Seven','8':'Eight',
+	'9':'Nine','10':'Ten','J':'Jack','Q':'Queen','K':'King'}
+
 suits = ['C','D','H','S']
-joker = ['0','0']
+suit_names = {'C':'Clubs','D':'Diamonds',
+	'H':'Hearts','S':'Spades'}
 
 class Card(object):
 	rank = '0'
@@ -13,9 +18,9 @@ class Card(object):
 	def __init__(self, v, s):
 		if s not in suits:
 			raise TypeError("Invalid Suit")
-		if v not in values:
+		if v not in ranks:
 			if type(v) == type(1) and v <=13:
-				v = values[v]
+				v = ranks[v]
 			else:
 				raise TypeError("Invalid Rank")
 		
@@ -25,9 +30,10 @@ class Card(object):
 		if self.rank == '0' and self.suit == '0':
 			return '<Joker>'
 		else:
-			return '<'+self.rank + self.suit+'>'
+			return '<'+rank_names[self.rank] + ' of ' + suit_names[self.suit] + '>'
+			#return '<'+self.rank + self.suit+'>'
 	def value(self):
-		return values.index(self.rank)
+		return ranks.index(self.rank)
 	def __cmp__(self, other):
 		t1 = self.suit, self.rank
 		t2 = other.suit, other.rank
@@ -35,7 +41,7 @@ class Card(object):
 
 class Deck(object):
 	def __init__(self, numDecks=1, jflag=0):
-		self.cards = [Card(v,s) for v in values[1:] for s in suits for deck in range(numDecks)]
+		self.cards = [Card(v,s) for v in ranks[1:] for s in suits for deck in range(numDecks)]
 		self.numDecks = numDecks
 		self.jflag = jflag
 		if jflag:
@@ -83,14 +89,11 @@ class Deck(object):
 	def __len__(self):
 		return self.deckSize()
 	def __getitem__(self,key):
-		pass
-	def __reversed__(self):
-		# doesn't work yet
-		d = Deck(self.numDecks, self.jflag)
-		d.cards = reversed(self.cards)
-		return d
-	def __iter(self):
-		pass
+		return self.cards[key]
+	def __iter__(self):
+		while self.deckSize():
+			yield self.cards.pop()
+		raise StopIteration
 	def __repr__(self):
 		return "<{} {} with {} {} remaining>".format(self.numDecks, \
 			"deck" if self.numDecks == 1 else "decks", \
